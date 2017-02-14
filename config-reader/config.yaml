@@ -1,0 +1,4 @@
+jenkins_server: http://master.jenkins.com:8080/
+jenkins_user: jenkins
+jenkins_password: jenkins
+jenkins_credential: 123-456-789

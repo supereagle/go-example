@@ -1,0 +1,25 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "czYk/WWf+CFN7WWLniRMQWSxQEs=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "df78bc75a33fd9b582230e052be33dff861f3a4a",
+			"revisionTime": "2015-10-09T17:37:01Z"
+		},
+		{
+			"checksumSHA1": "Vg8zcP6AUUPApRXZN4rbF92HOuM=",
+			"path": "github.com/codegangsta/cli",
+			"revision": "eaad6fe6bc9f5de81ed51cb34c42258c57a3615a",
+			"revisionTime": "2015-09-05T21:07:14Z"
+		},
+		{
+			"checksumSHA1": "rO5YE+IAvD4J9Las822E4YND1vc=",
+			"path": "gopkg.in/yaml.v2",
+			"revision": "a83829b6f1293c91addabc89d0571c246397bbf4",
+			"revisionTime": "2016-03-01T20:40:22Z"
+		}
+	],
+	"rootPath": "github.com/supereagle/go-example/config-reader"
+}
