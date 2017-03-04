@@ -19,47 +19,64 @@ import (
 const (
 	defaultPort    = 8080
 	requestTimeout = 5 * time.Second
+
+	// Config source supported
+	ENV  string = "env"
+	ETCD        = "etcd"
+	JSON        = "json"
+	YAML        = "yaml"
 )
 
 func main() {
 	// Create the command line app
 	app := cli.NewApp()
 	app.Name = "ConfigReader"
-	app.Usage = "Tool to read config from etcd, json and yaml files"
+	app.Usage = "Tool to read config from environment variables, etcd, and json or yaml files"
 	app.Version = "1.0.0"
 	app.Flags = []cli.Flag{
 		cli.HelpFlag,
 		cli.VersionFlag,
 		cli.StringFlag{
 			Name:  "source, s",
-			Usage: "source of config, supported etcd, json and yaml files",
-			Value: "json",
+			Usage: "config source, supported env, etcd, json or yaml, default is env",
+			Value: "env",
 		},
 		cli.StringFlag{
 			Name:  "config, c",
-			Usage: "config file path",
-			Value: "config.json",
+			Usage: "config file path, needed when config source is json or yaml",
 		},
 		cli.StringFlag{
 			Name:  "endpoints, e",
-			Usage: "urls of ETCD cluster separated by comma, needed when -s=etcd",
+			Usage: "urls of ETCD cluster separated by comma, needed when config source is etcd",
 		},
 	}
 	app.Action = func(c *cli.Context) {
 		// Read the config
 		source := c.String("source")
-		path := c.String("config")
 
 		var err error
 		cfg := &Config{}
 
 		switch source {
-		case "json":
-			cfg, err = ReadJson(path)
-		case "yaml":
-			cfg, err = ReadYaml(path)
-		case "etcd":
+		case ENV:
+			cfg, err = ReadEnv()
+		case JSON, YAML:
+			path := c.String("config")
+			if len(path) == 0 {
+				err = fmt.Errorf("The config file path must be provided when config source is JSON or YAML.")
+				break
+			}
+			if source == JSON {
+				cfg, err = ReadJson(path)
+			} else {
+				cfg, err = ReadYaml(path)
+			}
+		case ETCD:
 			endpointsStr := c.String("endpoints")
+			if len(endpointsStr) == 0 {
+				err = fmt.Errorf("The ETCD endpoints must be provided when config source is ETCD.")
+				break
+			}
 			endpoints := strings.Split(endpointsStr, ",")
 			cfg, err = ReadEtcd(endpoints)
 		default:
@@ -178,6 +195,22 @@ func ReadEtcd(endpoints []string) (*Config, error) {
 	port, err := strconv.Atoi(resp.Node.Value)
 	if err != nil {
 		return nil, fmt.Errorf("Fail to convert the port from string to int as %s", err.Error())
+	}
+	cfg.Port = port
+
+	return cfg, nil
+}
+
+func ReadEnv() (*Config, error) {
+	cfg := &Config{}
+
+	cfg.JenkinsServer, cfg.JenkinsUser, cfg.JenkinsPassword, cfg.JenkinsCredential =
+		os.Getenv("JENKINS_SERVER"), os.Getenv("JENKINS_USER"), os.Getenv("JENKINS_PASSWORD"), os.Getenv("JENKINS_CREDENTIAL")
+
+	portEnv := os.Getenv("PORT")
+	port, err := strconv.Atoi(portEnv)
+	if err != nil {
+		return nil, fmt.Errorf("Fail to get the port as the environment variable PORT is not set or not corret.")
 	}
 	cfg.Port = port
 
