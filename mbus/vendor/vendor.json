@@ -1,0 +1,31 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "6TS536n5yTJeLFmLWwr4dbibEsQ=",
+			"path": "github.com/apcera/nats",
+			"revision": "20b066697dfb0705615658394a00262c1523e9e3",
+			"revisionTime": "2015-06-26T16:23:48Z"
+		},
+		{
+			"checksumSHA1": "dBt0GZPqmudAsHMoELhqIlItvNc=",
+			"path": "github.com/golang/snappy",
+			"revision": "d9eb7a3d35ec988b8585d4a0068e462c27d28380",
+			"revisionTime": "2016-05-29T05:00:41Z"
+		},
+		{
+			"checksumSHA1": "JuVd0QAOpz9dMj9ApDRIx145R3Q=",
+			"path": "github.com/optiopay/kafka",
+			"revision": "cc06dff0763fec74477d170567ea30786d4d4433",
+			"revisionTime": "2016-12-02T14:14:56Z"
+		},
+		{
+			"checksumSHA1": "HCU460tZeOq3OT5ikFmvQBHC6ms=",
+			"path": "github.com/optiopay/kafka/proto",
+			"revision": "cc06dff0763fec74477d170567ea30786d4d4433",
+			"revisionTime": "2016-12-02T14:14:56Z"
+		}
+	],
+	"rootPath": "github.com/supereagle/go-example/mbus"
+}
