@@ -59,14 +59,14 @@ func (server *Server) doAuth(resp http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	tokenStr, err := token.GenToken(ar)
+	tokenStr, err := token.GenToken(ar, server.config)
 	if err != nil {
 		log.Errorf("Fail to generate token for user %s as %s.", ar.Username, err.Error())
 	}
 
 	tk := make(map[string]interface{})
 	tk["token"] = tokenStr
-	tk["expires_in"] = server.config.Expiration
+	tk["expires_in"] = server.config.Token.Expiration
 	tk["issued_at"] = time.Now().UTC().Format(time.RFC3339)
 	result, _ := json.Marshal(tk)
 

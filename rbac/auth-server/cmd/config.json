@@ -1,4 +1,8 @@
 {
 	"port": 8080,
-	"expiration": 900
+	"token": {
+		"expiration": 900,
+		"algorithm": "RS2048",
+		"key": "./cert/server.key"
+	}
 }

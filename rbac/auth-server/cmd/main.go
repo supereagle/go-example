@@ -25,9 +25,15 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
-		// Read the config
+		// Read and verify the config
 		path := c.String("config")
 		cfg, err := config.Read(path)
+		if err != nil {
+			log.Errorln(err.Error())
+			return
+		}
+
+		err = config.Verify(cfg)
 		if err != nil {
 			log.Errorln(err.Error())
 			return

@@ -14,8 +14,14 @@ const (
 )
 
 type Config struct {
-	Port       int `json:"port,omitempty"`
-	Expiration int `json:"expiration,omitempty"`
+	Port  int    `json:"port,omitempty"`
+	Token *Token `json:"token,omitempty"`
+}
+
+type Token struct {
+	Expiration int64  `json:"expiration,omitempty"`
+	Algorithm  string `json:"algorithm,omitempty"`
+	Key        string `yaml:"key,omitempty"`
 }
 
 func Read(path string) (*Config, error) {
@@ -30,14 +36,31 @@ func Read(path string) (*Config, error) {
 		return nil, fmt.Errorf("Fail to unmarshal a JSON object from the config file %s", path)
 	}
 
+	return cfg, nil
+}
+
+func Verify(cfg *Config) error {
+	// Verify the token config
+	if cfg.Token == nil {
+		return fmt.Errorf("Token is not configured.")
+	}
+
+	if cfg.Token.Key == "" {
+		return fmt.Errorf("The key of token is not configured.")
+	}
+
+	if cfg.Token.Algorithm == "" {
+		return fmt.Errorf("The algorithm of token is not configured.")
+	}
+
 	// Set the default config for configures not specified
 	if cfg.Port == 0 {
 		cfg.Port = defaultPort
 	}
 
-	if cfg.Expiration == 0 {
-		cfg.Expiration = defaultExpiration
+	if cfg.Token.Expiration == 0 {
+		cfg.Token.Expiration = defaultExpiration
 	}
 
-	return cfg, nil
+	return nil
 }
