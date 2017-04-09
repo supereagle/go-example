@@ -12,10 +12,10 @@ import (
 
 var (
 	SupportedResourceTypes = []string{"fruits", "vegetables"}
-	ResourceTypes          = setsUtil.NewStringSets(SupportedResourceTypes)
+	ResourceTypes          = setsUtil.NewStringSet(SupportedResourceTypes)
 
 	SupportedActions = []string{"create", "delete", "update", "view"}
-	Actions          = setsUtil.NewStringSets(SupportedActions)
+	Actions          = setsUtil.NewStringSet(SupportedActions)
 )
 
 func init() {
@@ -35,14 +35,14 @@ func (t *ticketer) ParseTicket(scopeStr string) (*auth.Scope, error) {
 		return nil, err
 	}
 
-	if !ResourceTypes.Contains(scope.ResourceType) {
+	if !ResourceTypes.Has(scope.ResourceType) {
 		err = fmt.Errorf("Resource type %s is not supported.", scope.ResourceType)
 		log.Error(err)
 		return nil, err
 	}
 
 	for _, action := range scope.Actions {
-		if !Actions.Contains(action) {
+		if !Actions.Has(action) {
 			err = fmt.Errorf("Action %s is not supported.", action)
 			log.Error(err)
 			return nil, err

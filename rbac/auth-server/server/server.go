@@ -72,9 +72,6 @@ func (server *Server) doAuth(resp http.ResponseWriter, req *http.Request) {
 
 	resp.Header().Set("Content-Type", "application/json")
 	resp.Write(result)
-
-	fmt.Printf("AR is %v\n", ar)
-	fmt.Printf("tokenStr is %s\n", tokenStr)
 }
 
 func parseRequest(req *http.Request) *auth.AuthRequest {
