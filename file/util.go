@@ -6,14 +6,11 @@ import (
 )
 
 func FileExists(path string) bool {
-	_, err := os.Stat(path)
 	// First check the err, if the file exists, err is nil
-	if err == nil {
+	if _, err := os.Stat(path); err == nil || os.IsExist(err) {
 		return true
 	}
-	if os.IsNotExist(err) {
-		return false
-	}
+
 	return false
 }
 
