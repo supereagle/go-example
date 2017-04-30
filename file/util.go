@@ -7,7 +7,7 @@ import (
 
 func FileExists(path string) bool {
 	// First check the err, if the file exists, err is nil
-	if _, err := os.Stat(path); err == nil || os.IsExist(err) {
+	if _, err := os.Stat(path); err != nil {
 		return true
 	}
 
