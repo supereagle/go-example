@@ -32,7 +32,7 @@ Headers:
 	Authorization: Basic cHJvZHVjdC1tYXN0ZXI6MTIzNDU2 (Basic Auth for username `product-master` and password `123456`)
 ```
 
-**Example Request**
+**Example Response**
 
 ```json
 {
