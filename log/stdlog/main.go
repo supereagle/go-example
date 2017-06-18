@@ -28,7 +28,7 @@ func main() {
 
 	// Update the flags
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
-	log.Print("Print with flags")
+	log.Print("Print with different flags")
 
 	// Panic() will stop normal execution of the current goroutine,
 	// so the following code will be ignored, but the defer code still executes.
