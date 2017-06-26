@@ -3,28 +3,46 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "6TS536n5yTJeLFmLWwr4dbibEsQ=",
-			"path": "github.com/apcera/nats",
-			"revision": "20b066697dfb0705615658394a00262c1523e9e3",
-			"revisionTime": "2015-06-26T16:23:48Z"
-		},
-		{
-			"checksumSHA1": "dBt0GZPqmudAsHMoELhqIlItvNc=",
+			"checksumSHA1": "OV+/R43DDDJ/Gxrx9oQob/K7sL0=",
 			"path": "github.com/golang/snappy",
-			"revision": "d9eb7a3d35ec988b8585d4a0068e462c27d28380",
-			"revisionTime": "2016-05-29T05:00:41Z"
+			"revision": "553a641470496b2327abcac10b36396bd98e45c9",
+			"revisionTime": "2017-02-15T23:32:05Z"
 		},
 		{
-			"checksumSHA1": "JuVd0QAOpz9dMj9ApDRIx145R3Q=",
+			"checksumSHA1": "r4FHbTUDCrBqsXNKWIuz8YD9frY=",
+			"path": "github.com/nats-io/go-nats",
+			"revision": "0f25ebdb0f66fac3de939396a6eeb64d3cee23cd",
+			"revisionTime": "2017-06-12T20:24:48Z"
+		},
+		{
+			"checksumSHA1": "JlZA7P9zxdiO2xZh7PsxLpPBaEg=",
+			"path": "github.com/nats-io/go-nats/encoders/builtin",
+			"revision": "0f25ebdb0f66fac3de939396a6eeb64d3cee23cd",
+			"revisionTime": "2017-06-12T20:24:48Z"
+		},
+		{
+			"checksumSHA1": "4myIR9VssaX/4mBKSW6mrG7mKPQ=",
+			"path": "github.com/nats-io/go-nats/util",
+			"revision": "0f25ebdb0f66fac3de939396a6eeb64d3cee23cd",
+			"revisionTime": "2017-06-12T20:24:48Z"
+		},
+		{
+			"checksumSHA1": "m9Xh1iAP99E0gSfojzmTEok2MWU=",
+			"path": "github.com/nats-io/nuid",
+			"revision": "3cf34f9fca4e88afa9da8eabd75e3326c9941b44",
+			"revisionTime": "2017-03-03T15:02:24Z"
+		},
+		{
+			"checksumSHA1": "J3hG7/xQ/udD5mX2K38s1rG5nkA=",
 			"path": "github.com/optiopay/kafka",
-			"revision": "cc06dff0763fec74477d170567ea30786d4d4433",
-			"revisionTime": "2016-12-02T14:14:56Z"
+			"revision": "7b7b6a0d49740e36cd39226913b38cecf9ef76cb",
+			"revisionTime": "2017-01-27T18:00:40Z"
 		},
 		{
 			"checksumSHA1": "HCU460tZeOq3OT5ikFmvQBHC6ms=",
 			"path": "github.com/optiopay/kafka/proto",
-			"revision": "cc06dff0763fec74477d170567ea30786d4d4433",
-			"revisionTime": "2016-12-02T14:14:56Z"
+			"revision": "7b7b6a0d49740e36cd39226913b38cecf9ef76cb",
+			"revisionTime": "2017-01-27T18:00:40Z"
 		}
 	],
 	"rootPath": "github.com/supereagle/go-example/mbus"

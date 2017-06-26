@@ -1,4 +1,4 @@
-// Copyright 2013-2014 Apcera Inc. All rights reserved.
+// Copyright 2013-2017 Apcera Inc. All rights reserved.
 
 package nats
 
@@ -11,7 +11,7 @@ import (
 // to subjects and optionally queue groups.
 // Data will be encoded and decoded via the EncodedConn and its associated encoders.
 
-// Bind a channel for send operations to nats.
+// BindSendChan binds a channel for send operations to NATS.
 func (c *EncodedConn) BindSendChan(subject string, channel interface{}) error {
 	chVal := reflect.ValueOf(channel)
 	if chVal.Kind() != reflect.Chan {
@@ -31,21 +31,30 @@ func chPublish(c *EncodedConn, chVal reflect.Value, subject string) {
 			return
 		}
 		if e := c.Publish(subject, val.Interface()); e != nil {
+			// Do this under lock.
+			c.Conn.mu.Lock()
+			defer c.Conn.mu.Unlock()
+
 			if c.Conn.Opts.AsyncErrorCB != nil {
 				// FIXME(dlc) - Not sure this is the right thing to do.
-				go c.Conn.Opts.AsyncErrorCB(c.Conn, nil, e)
+				// FIXME(ivan) - If the connection is not yet closed, try to schedule the callback
+				if c.Conn.isClosed() {
+					go c.Conn.Opts.AsyncErrorCB(c.Conn, nil, e)
+				} else {
+					c.Conn.ach <- func() { c.Conn.Opts.AsyncErrorCB(c.Conn, nil, e) }
+				}
 			}
 			return
 		}
 	}
 }
 
-// Bind a channel for receive operations from nats.
+// BindRecvChan binds a channel for receive operations from NATS.
 func (c *EncodedConn) BindRecvChan(subject string, channel interface{}) (*Subscription, error) {
 	return c.bindRecvChan(subject, _EMPTY_, channel)
 }
 
-// Bind a channel for queue-based receive operations from nats.
+// BindRecvQueueChan binds a channel for queue-based receive operations from NATS.
 func (c *EncodedConn) BindRecvQueueChan(subject, queue string, channel interface{}) (*Subscription, error) {
 	return c.bindRecvChan(subject, queue, channel)
 }
@@ -68,7 +77,7 @@ func (c *EncodedConn) bindRecvChan(subject, queue string, channel interface{}) (
 		if err := c.Enc.Decode(m.Subject, m.Data, oPtr.Interface()); err != nil {
 			c.Conn.err = errors.New("nats: Got an error trying to unmarshal: " + err.Error())
 			if c.Conn.Opts.AsyncErrorCB != nil {
-				go c.Conn.Opts.AsyncErrorCB(c.Conn, m.Sub, c.Conn.err)
+				c.Conn.ach <- func() { c.Conn.Opts.AsyncErrorCB(c.Conn, m.Sub, c.Conn.err) }
 			}
 			return
 		}
@@ -87,5 +96,5 @@ func (c *EncodedConn) bindRecvChan(subject, queue string, channel interface{}) (
 		chVal.Send(oPtr)
 	}
 
-	return c.Conn.subscribe(subject, queue, cb, c.Conn.Opts.SubChanLen)
+	return c.Conn.subscribe(subject, queue, cb, nil)
 }

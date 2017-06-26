@@ -1,4 +1,4 @@
-// Copyright 2012-2014 Apcera Inc. All rights reserved.
+// Copyright 2012-2015 Apcera Inc. All rights reserved.
 
 package nats
 
@@ -8,6 +8,9 @@ import (
 	"reflect"
 	"sync"
 	"time"
+
+	// Default Encoders
+	. "github.com/nats-io/go-nats/encoders/builtin"
 )
 
 // Encoder interface is for all register encoders
@@ -19,6 +22,7 @@ type Encoder interface {
 var encMap map[string]Encoder
 var encLock sync.Mutex
 
+// Indexe names into the Registered Encoders.
 const (
 	JSON_ENCODER    = "json"
 	GOB_ENCODER     = "gob"
@@ -28,9 +32,9 @@ const (
 func init() {
 	encMap = make(map[string]Encoder)
 	// Register json, gob and default encoder
-	RegisterEncoder("json", &JsonEncoder{})
-	RegisterEncoder("gob", &GobEncoder{})
-	RegisterEncoder("default", &DefaultEncoder{})
+	RegisterEncoder(JSON_ENCODER, &JsonEncoder{})
+	RegisterEncoder(GOB_ENCODER, &GobEncoder{})
+	RegisterEncoder(DEFAULT_ENCODER, &DefaultEncoder{})
 }
 
 // EncodedConn are the preferred way to interface with NATS. They wrap a bare connection to
@@ -76,7 +80,6 @@ func EncoderForType(encType string) Encoder {
 func (c *EncodedConn) Publish(subject string, v interface{}) error {
 	b, err := c.Enc.Encode(subject, v)
 	if err != nil {
-		c.Conn.err = err
 		return err
 	}
 	return c.Conn.publish(subject, _EMPTY_, b)
@@ -116,7 +119,7 @@ func (c *EncodedConn) Request(subject string, v interface{}, vPtr interface{}, t
 
 // Handler is a specific callback used for Subscribe. It is generalized to
 // an interface{}, but we will discover its format and arguments at runtime
-// and perform the correct callback, including de-marshalling JSON strings
+// and perform the correct callback, including de-marshaling JSON strings
 // back into the appropriate struct based on the signature of the Handler.
 //
 // Handlers are expected to have one of four signatures.
@@ -169,7 +172,14 @@ func (c *EncodedConn) QueueSubscribe(subject, queue string, cb Handler) (*Subscr
 
 // Internal implementation that all public functions will use.
 func (c *EncodedConn) subscribe(subject, queue string, cb Handler) (*Subscription, error) {
+	if cb == nil {
+		return nil, errors.New("nats: Handler required for EncodedConn Subscription")
+	}
 	argType, numArgs := argInfo(cb)
+	if argType == nil {
+		return nil, errors.New("nats: Handler requires at least one argument")
+	}
+
 	cbValue := reflect.ValueOf(cb)
 	wantsRaw := (argType == emptyMsgType)
 
@@ -185,13 +195,11 @@ func (c *EncodedConn) subscribe(subject, queue string, cb Handler) (*Subscriptio
 				oPtr = reflect.New(argType.Elem())
 			}
 			if err := c.Enc.Decode(m.Subject, m.Data, oPtr.Interface()); err != nil {
-				nc := c.Conn
-				nc.mu.Lock()
-				nc.err = errors.New("nats: Got an error trying to unmarshal: " + err.Error())
-				if nc.Opts.AsyncErrorCB != nil {
-					go c.Conn.Opts.AsyncErrorCB(c.Conn, m.Sub, c.Conn.err)
+				if c.Conn.Opts.AsyncErrorCB != nil {
+					c.Conn.ach <- func() {
+						c.Conn.Opts.AsyncErrorCB(c.Conn, m.Sub, errors.New("nats: Got an error trying to unmarshal: "+err.Error()))
+					}
 				}
-				nc.mu.Unlock()
 				return
 			}
 			if argType.Kind() != reflect.Ptr {
@@ -215,7 +223,7 @@ func (c *EncodedConn) subscribe(subject, queue string, cb Handler) (*Subscriptio
 		cbValue.Call(oV)
 	}
 
-	return c.Conn.subscribe(subject, queue, natsCB, c.Conn.Opts.SubChanLen)
+	return c.Conn.subscribe(subject, queue, natsCB, nil)
 }
 
 // FlushTimeout allows a Flush operation to have an associated timeout.
@@ -230,7 +238,7 @@ func (c *EncodedConn) Flush() error {
 }
 
 // Close will close the connection to the server. This call will release
-// all blocking calls, such as Flush() and NextMsg()
+// all blocking calls, such as Flush(), etc.
 func (c *EncodedConn) Close() {
 	c.Conn.Close()
 }

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/apcera/nats"
+	"github.com/nats-io/go-nats"
 	"github.com/supereagle/go-example/mbus"
 )
 

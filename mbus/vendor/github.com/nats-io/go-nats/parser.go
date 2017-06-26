@@ -1,6 +1,5 @@
-// Copyright 2012-2014 Apcera Inc. All rights reserved.
+// Copyright 2012-2017 Apcera Inc. All rights reserved.
 
-// A Go client for the NATS messaging system (https://nats.io).
 package nats
 
 import (
@@ -37,14 +36,6 @@ const (
 	OP_MINUS_ERR
 	OP_MINUS_ERR_SPC
 	MINUS_ERR_ARG
-	OP_C
-	OP_CO
-	OP_CON
-	OP_CONN
-	OP_CONNE
-	OP_CONNEC
-	OP_CONNECT
-	CONNECT_ARG
 	OP_M
 	OP_MS
 	OP_MSG
@@ -59,6 +50,12 @@ const (
 	OP_PO
 	OP_PON
 	OP_PONG
+	OP_I
+	OP_IN
+	OP_INF
+	OP_INFO
+	OP_INFO_SPC
+	INFO_ARG
 )
 
 // parse is the fast protocol parser engine.
@@ -66,20 +63,23 @@ func (nc *Conn) parse(buf []byte) error {
 	var i int
 	var b byte
 
-	for i, b = range buf {
+	// Move to loop instead of range syntax to allow jumping of i
+	for i = 0; i < len(buf); i++ {
+		b = buf[i]
+
 		switch nc.ps.state {
 		case OP_START:
 			switch b {
 			case 'M', 'm':
 				nc.ps.state = OP_M
-			case 'C', 'c':
-				nc.ps.state = OP_C
 			case 'P', 'p':
 				nc.ps.state = OP_P
 			case '+':
 				nc.ps.state = OP_PLUS
 			case '-':
 				nc.ps.state = OP_MINUS
+			case 'I', 'i':
+				nc.ps.state = OP_I
 			default:
 				goto parseErr
 			}
@@ -127,6 +127,11 @@ func (nc *Conn) parse(buf []byte) error {
 					return err
 				}
 				nc.ps.drop, nc.ps.as, nc.ps.state = 0, i+1, MSG_PAYLOAD
+
+				// jump ahead with the index. If this overruns
+				// what is left we fall out and process split
+				// buffer.
+				i = nc.ps.as + nc.ps.ma.size - 1
 			default:
 				if nc.ps.argBuf != nil {
 					nc.ps.argBuf = append(nc.ps.argBuf, b)
@@ -138,7 +143,24 @@ func (nc *Conn) parse(buf []byte) error {
 					nc.processMsg(nc.ps.msgBuf)
 					nc.ps.argBuf, nc.ps.msgBuf, nc.ps.state = nil, nil, MSG_END
 				} else {
-					nc.ps.msgBuf = append(nc.ps.msgBuf, b)
+					// copy as much as we can to the buffer and skip ahead.
+					toCopy := nc.ps.ma.size - len(nc.ps.msgBuf)
+					avail := len(buf) - i
+
+					if avail < toCopy {
+						toCopy = avail
+					}
+
+					if toCopy > 0 {
+						start := len(nc.ps.msgBuf)
+						// This is needed for copy to work.
+						nc.ps.msgBuf = nc.ps.msgBuf[:start+toCopy]
+						copy(nc.ps.msgBuf[start:], buf[i:i+toCopy])
+						// Update our index
+						i = (i + toCopy) - 1
+					} else {
+						nc.ps.msgBuf = append(nc.ps.msgBuf, b)
+					}
 				}
 			} else if i-nc.ps.as >= nc.ps.ma.size {
 				nc.processMsg(buf[nc.ps.as:i])
@@ -275,14 +297,69 @@ func (nc *Conn) parse(buf []byte) error {
 				nc.processPing()
 				nc.ps.drop, nc.ps.state = 0, OP_START
 			}
+		case OP_I:
+			switch b {
+			case 'N', 'n':
+				nc.ps.state = OP_IN
+			default:
+				goto parseErr
+			}
+		case OP_IN:
+			switch b {
+			case 'F', 'f':
+				nc.ps.state = OP_INF
+			default:
+				goto parseErr
+			}
+		case OP_INF:
+			switch b {
+			case 'O', 'o':
+				nc.ps.state = OP_INFO
+			default:
+				goto parseErr
+			}
+		case OP_INFO:
+			switch b {
+			case ' ', '\t':
+				nc.ps.state = OP_INFO_SPC
+			default:
+				goto parseErr
+			}
+		case OP_INFO_SPC:
+			switch b {
+			case ' ', '\t':
+				continue
+			default:
+				nc.ps.state = INFO_ARG
+				nc.ps.as = i
+			}
+		case INFO_ARG:
+			switch b {
+			case '\r':
+				nc.ps.drop = 1
+			case '\n':
+				var arg []byte
+				if nc.ps.argBuf != nil {
+					arg = nc.ps.argBuf
+					nc.ps.argBuf = nil
+				} else {
+					arg = buf[nc.ps.as : i-nc.ps.drop]
+				}
+				nc.processAsyncInfo(arg)
+				nc.ps.drop, nc.ps.as, nc.ps.state = 0, i+1, OP_START
+			default:
+				if nc.ps.argBuf != nil {
+					nc.ps.argBuf = append(nc.ps.argBuf, b)
+				}
+			}
 		default:
 			goto parseErr
 		}
 	}
 	// Check for split buffer scenarios
-	if (nc.ps.state == MSG_ARG || nc.ps.state == MINUS_ERR_ARG) && nc.ps.argBuf == nil {
+	if (nc.ps.state == MSG_ARG || nc.ps.state == MINUS_ERR_ARG || nc.ps.state == INFO_ARG) && nc.ps.argBuf == nil {
 		nc.ps.argBuf = nc.ps.scratch[:0]
-		nc.ps.argBuf = append(nc.ps.argBuf, buf[nc.ps.as:(i+1)-nc.ps.drop]...)
+		nc.ps.argBuf = append(nc.ps.argBuf, buf[nc.ps.as:i-nc.ps.drop]...)
 		// FIXME, check max len
 	}
 	// Check for split msg
@@ -292,9 +369,18 @@ func (nc *Conn) parse(buf []byte) error {
 		if nc.ps.argBuf == nil {
 			nc.cloneMsgArg()
 		}
-		// FIXME: copy better here? Make whole buf if large?
-		nc.ps.msgBuf = nc.ps.scratch[len(nc.ps.argBuf):len(nc.ps.argBuf)]
-		nc.ps.msgBuf = append(nc.ps.msgBuf, (buf[nc.ps.as:])...)
+
+		// If we will overflow the scratch buffer, just create a
+		// new buffer to hold the split message.
+		if nc.ps.ma.size > cap(nc.ps.scratch)-len(nc.ps.argBuf) {
+			lrem := len(buf[nc.ps.as:])
+
+			nc.ps.msgBuf = make([]byte, lrem, nc.ps.ma.size)
+			copy(nc.ps.msgBuf, buf[nc.ps.as:])
+		} else {
+			nc.ps.msgBuf = nc.ps.scratch[len(nc.ps.argBuf):len(nc.ps.argBuf)]
+			nc.ps.msgBuf = append(nc.ps.msgBuf, (buf[nc.ps.as:])...)
+		}
 	}
 
 	return nil
@@ -352,6 +438,9 @@ func (nc *Conn) processMsgArgs(arg []byte) error {
 		nc.ps.ma.size = int(parseInt64(args[3]))
 	default:
 		return fmt.Errorf("nats: processMsgArgs Parse Error: '%s'", arg)
+	}
+	if nc.ps.ma.sid < 0 {
+		return fmt.Errorf("nats: processMsgArgs Bad or Missing Sid: '%s'", arg)
 	}
 	if nc.ps.ma.size < 0 {
 		return fmt.Errorf("nats: processMsgArgs Bad or Missing Size: '%s'", arg)
