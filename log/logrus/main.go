@@ -35,9 +35,6 @@ func main() {
 		"size":   10,
 	}).Warn("Warn")
 
-	// Log as JSON instead of the default ASCII formatter.
-	log.SetFormatter(&log.JSONFormatter{})
-
 	// Log without fields
 	log.Error("Error")
 
@@ -49,6 +46,10 @@ func main() {
 	})
 
 	contextLogger.Info("Info one")
+
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+
 	contextLogger.Info("Info two")
 
 	// Panic() will stop normal execution of the current goroutine,
