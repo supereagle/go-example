@@ -22,10 +22,14 @@ func main() {
 	// Flushes all pending log I/O.
 	defer glog.Flush()
 
-	// The temp folder for log files when --log_dir is not set
+	// The temp folder for log files when --log_dir is not set.
 	fmt.Printf("Temp folder for log files: %s\n", os.TempDir())
 
+	// There is no difference between Info() and Infoln().
+	// Glog ensures each log is in one line by appending a newline if it is missing.
 	glog.Info("Info")
+	glog.Infoln("Infoln")
+
 	glog.V(1).Info("L1 info")
 	glog.Error("Error")
 
