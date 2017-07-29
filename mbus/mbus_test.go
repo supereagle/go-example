@@ -14,10 +14,10 @@ func TestMsgBusMap(t *testing.T) {
 	}
 
 	if _, ok := mbus.MsgBusMap[mbus.Kafka]; !ok {
-		t.Errorf("Kafka message bus is registried")
+		t.Errorf("Kafka message bus is not registried")
 	}
 
 	if _, ok := mbus.MsgBusMap[mbus.Kafka]; !ok {
-		t.Errorf("Nats message bus is registried")
+		t.Errorf("Nats message bus is not registried")
 	}
 }
