@@ -2237,7 +2237,7 @@ func (nc *Conn) subscribe(subj, queue string, cb MsgHandler, ch chan *Msg) (*Sub
 		sub.typ = ChanSubscription
 		sub.mch = ch
 	}
-	fmt.Printf("%+v\n", nc)
+
 	nc.subsMu.Lock()
 	nc.ssid++
 	sub.sid = nc.ssid
