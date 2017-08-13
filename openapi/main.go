@@ -70,14 +70,19 @@ func main() {
 		Metadata(restfulspec.KeyOpenAPITags, consumerTags).Reads(Consumer{}).
 		Writes(ResponseEntity{}))
 
+	// NOTE Must add this web service befor openapi service.
 	restful.DefaultContainer.Add(ws)
+
+	// Enable openapi.
 	enableOpenApiService()
+	addOpenApiStaticHandler("./swagger-ui/dist")
+
 	if err := http.ListenAndServe("localhost:8080", nil); err != nil {
 		panic(err.Error())
 	}
 }
 
-// enableOpenApiService enables the openapi service
+// enableOpenApiService enables the openapi service.
 func enableOpenApiService() {
 	config := restfulspec.Config{
 		WebServices:    restful.RegisteredWebServices(),
@@ -86,6 +91,16 @@ func enableOpenApiService() {
 	}
 	openapiService := restfulspec.NewOpenAPIService(config)
 	restful.DefaultContainer.Add(openapiService)
+
+}
+
+func addOpenApiStaticHandler(swaggerUIDir string) {
+	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
+	// You need to download the Swagger HTML5 assets and change the FilePath location in the config below.
+	// Open http://localhost:8080/apidocs/?url=http://localhost:8080/apidocs.json
+	http.Handle("/apidocs/",
+		http.StripPrefix("/apidocs/",
+			http.FileServer(http.Dir(swaggerUIDir))))
 }
 
 func createBook(request *restful.Request, response *restful.Response) {
