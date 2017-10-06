@@ -22,8 +22,8 @@
 
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/golang/glog"
+  name = "github.com/sirupsen/logrus"
+  version = ">=1.0.3, <=11.0.0-g89742ae"
 
 [[constraint]]
   name = "github.com/spf13/pflag"

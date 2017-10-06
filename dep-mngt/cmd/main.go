@@ -2,14 +2,14 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	// "github.com/golang/glog"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 
 	"github.com/supereagle/go-example/dep-mngt/cmd/options"
 )
-
-
 
 func main() {
 	// Log to standard error instead of files.
@@ -17,6 +17,8 @@ func main() {
 
 	// Flushes all pending log I/O.
 	// defer glog.Flush()
+
+	logrus.SetOutput(os.Stdout)
 
 	// Initialize flags.
 	f := &options.Flags{}

@@ -1,0 +1,37 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "BYvROBsiyAXK4sq6yhDe8RgT4LM=",
+			"path": "github.com/sirupsen/logrus",
+			"revision": "89742aefa4b206dcf400792f3bd35b542998eb3b",
+			"revisionTime": "2017-08-22T13:27:46Z"
+		},
+		{
+			"checksumSHA1": "sTex1LO7/zjfSijsAsneaF2S4Jg=",
+			"path": "github.com/spf13/pflag",
+			"revision": "be7121dd7a937a85e1e4b1ddda6a3edce3466110",
+			"revisionTime": "2017-10-01T22:02:52Z"
+		},
+		{
+			"checksumSHA1": "nqWNlnMmVpt628zzvyo6Yv2CX5Q=",
+			"path": "golang.org/x/crypto/ssh/terminal",
+			"revision": "eb71ad9bd329b5ac0fd0148dd99bd62e8be8e035",
+			"revisionTime": "2017-08-07T10:11:13Z"
+		},
+		{
+			"checksumSHA1": "MBmecV6tS+vsAHgwPiGWSU3jBoc=",
+			"path": "golang.org/x/sys/unix",
+			"revision": "c84c1ab9fd18cdd4c23dd021c10f5f46dea95e46",
+			"revisionTime": "2017-08-11T22:05:22Z"
+		},
+		{
+			"checksumSHA1": "LkAsnLUlAZSg3lRYk7BEyNfog3A=",
+			"path": "golang.org/x/sys/windows",
+			"revision": "c84c1ab9fd18cdd4c23dd021c10f5f46dea95e46",
+			"revisionTime": "2017-08-11T22:05:22Z"
+		}
+	],
+	"rootPath": "github.com/supereagle/go-example/dep-mngt"
+}
