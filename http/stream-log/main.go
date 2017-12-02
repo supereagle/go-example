@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -28,6 +29,7 @@ func main() {
 
 	log.Info("Start listen on :8080")
 	http.HandleFunc("/apis/v1/logstream", serveWs)
+	http.HandleFunc("/apis/v1/proxyws", proxyWs)
 	http.ListenAndServe(":8080", nil)
 }
 
@@ -92,4 +94,73 @@ func writer(ws *websocket.Conn) {
 			}
 		}
 	}
+}
+
+// proxyWs proxy the WebSocket request to another server.
+// It will create two WebSocket connections and transfer data between them.
+func proxyWs(rw http.ResponseWriter, req *http.Request) {
+	clientConn, err := upgrader.Upgrade(rw, req, nil)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	defer clientConn.Close()
+
+	// Proxy the request to another WebSocket handler of this server.
+	u := url.URL{
+		Host:   "127.0.0.1:8080",
+		Path:   "/apis/v1/logstream",
+		Scheme: "ws",
+	}
+
+	// Need to filter the header for upgrade, as these headers will be added when dial the server.
+	// Otherwise, there will be duplicate header error.
+	header := filterHeader(req.Header)
+
+	serverConn, _, err := websocket.DefaultDialer.Dial(u.String(), header)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	defer serverConn.Close()
+
+	go transfer(clientConn, serverConn)
+	transfer(serverConn, clientConn)
+}
+
+// transfer transfers the data between two WebSocket connection.
+func transfer(from *websocket.Conn, to *websocket.Conn) {
+	for {
+		typ, message, err := from.ReadMessage()
+		if err != nil {
+			log.Errorf("[websocket]: transfer from %v to %v, read error: %v", from.RemoteAddr(), to.RemoteAddr(), err)
+			if closeErr := to.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, err.Error())); closeErr != nil {
+				log.Errorf("[websocket] can't send close message to server: %v", closeErr)
+			}
+			return
+		} else if err := to.WriteMessage(typ, message); err != nil {
+			log.Errorf("[websocket]: transfer from %v to %v, write error: %v", from.RemoteAddr(), to.RemoteAddr(), err)
+			if closeErr := from.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, err.Error())); closeErr != nil {
+				log.Errorf("[websocket] can't send close message to client: %v", closeErr)
+			}
+			return
+		}
+	}
+}
+
+// filterHeader filters the headers for upgrading the HTTP server connection to the WebSocket protocol.
+func filterHeader(header http.Header) http.Header {
+	newHeader := http.Header{}
+	for k, vs := range header {
+		switch {
+		case k == "Upgrade" ||
+			k == "Connection" ||
+			k == "Sec-Websocket-Key" ||
+			k == "Sec-Websocket-Version" ||
+			k == "Sec-Websocket-Extensions":
+		default:
+			newHeader[k] = vs
+		}
+	}
+	return newHeader
 }

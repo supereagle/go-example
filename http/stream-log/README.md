@@ -1,7 +1,8 @@
 # Stream Log Server
 
 This is a demo for stream log server to illustrate how to provide stream log produced from server.
-The log content can be inputted through console after the server.
+At the same time, it illustrates the implementation of WebSocket proxy.
+The log content can be inputted through console of the server.
 
 ## Start the Server
 
@@ -16,6 +17,8 @@ The log content can be inputted through console after the server.
 ```shell
 # ./curl-websocket.sh
 ```
+
+The url in this script can be changed to `http://localhost:8080/apis/v1/proxyws` to test the WebSocket proxy.
 
 2. Input the log consent from the console of the server
 

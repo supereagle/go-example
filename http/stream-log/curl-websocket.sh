@@ -6,7 +6,9 @@ curl --include \
      --no-buffer \
      --header "Connection: Upgrade" \
      --header "Upgrade: websocket" \
+     --header "Origin: localhost" \
      --header "Host: localhost:8080" \
      --header "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" \
      --header "Sec-WebSocket-Version: 13" \
-     http://localhost:8080/apis/v1/logstream
+     --header "X-Tenant: caicloud" \
+     http://localhost:7088/api/v1/workspaces/ws1/pipelines/pipeline1/records/5a1be4ff2785251bd63c0350/logstream
