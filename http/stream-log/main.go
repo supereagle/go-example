@@ -42,6 +42,7 @@ var upgrader = websocket.Upgrader{
 // Writes the message to WebSocket connection.
 func serveWs(rw http.ResponseWriter, req *http.Request) {
 	log.Infof("Upgrade to websocket")
+	log.Infof("rawquery: %+v", req.URL)
 	ws, err := upgrader.Upgrade(rw, req, nil)
 	if err != nil {
 		log.Error(err.Error())
