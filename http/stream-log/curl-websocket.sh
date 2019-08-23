@@ -10,4 +10,4 @@ curl --include \
      --header "Sec-WebSocket-Key: SGVsbG8sIHdvcmxkIQ==" \
      --header "Sec-WebSocket-Version: 13" \
      --header "X-Tenant: caicloud" \
-     http://localhost:8080/apis/v1/proxyws?aaa=111
+     http://localhost:8080/apis/v1/proxyws?aaa=111\&bbb=222
