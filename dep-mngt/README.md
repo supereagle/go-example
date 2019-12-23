@@ -1,4 +1,60 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Golang Dependency Management](#golang-dependency-management)
+  - [Go mod](#go-mod)
+  - [Dep](#dep)
+    - [Installation](#installation)
+    - [Usage](#usage)
+      - [Start the Management](#start-the-management)
+      - [Add dependencies](#add-dependencies)
+      - [Add a dependency](#add-a-dependency)
+      - [Update a dependency](#update-a-dependency)
+      - [Remove a dependency](#remove-a-dependency)
+      - [Check status of dependency](#check-status-of-dependency)
+    - [Outputs](#outputs)
+  - [Godep](#godep)
+    - [Installation](#installation-1)
+    - [Usage](#usage-1)
+      - [Start the Management](#start-the-management-1)
+      - [Add dependencies](#add-dependencies-1)
+      - [Add a dependency](#add-a-dependency-1)
+      - [Update a dependency](#update-a-dependency-1)
+      - [Remove a dependency](#remove-a-dependency-1)
+      - [Check status of dependency](#check-status-of-dependency-1)
+    - [Outputs](#outputs-1)
+  - [Govendor](#govendor)
+    - [Installation](#installation-2)
+    - [Usage](#usage-2)
+      - [Start the Management](#start-the-management-2)
+      - [Add dependencies](#add-dependencies-2)
+      - [Add a dependency](#add-a-dependency-2)
+      - [Update a dependency](#update-a-dependency-2)
+      - [Remove a dependency](#remove-a-dependency-2)
+      - [Check status of dependency](#check-status-of-dependency-2)
+    - [Outputs](#outputs-2)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Golang Dependency Management
+
+## Go mod
+
+Go's module system, introduced in Go 1.11, provides an official dependency management solution built into the go command. 
+Go 1.11 and 1.12 include preliminary support for modules, you can use environment variable `GO111MODULE=on` to enable it.
+Starting in Go 1.13, module mode will be the default for all development.
+
+```sh
+# Enable go module for Go version <= 1.12
+$ export GO111MODULE=on
+# Use the Go module proxy in China
+$ export GOPROXY="https://goproxy.cn"
+# Create go.mod file and automatically imports dependencies from other dep tools
+$ go mod init github.com/supereagle/go-example/dep-mngt
+# Copy of dependencies into vendor
+$ go mod vendor
+```
 
 ## Dep
 
@@ -22,7 +78,7 @@ go get -u github.com/golang/dep/cmd/dep
 
 ### Usage
 
-#### Start the Management 
+#### Start the Management
 
 ```sh
 $ dep init
@@ -30,7 +86,6 @@ $ dep init
 
 `dep init` will generate the manifest file `Gopkg.toml` and lock file `Gopkg.lock`, and install dependencies in 
 `vendor/`.
-
 
 #### Add dependencies
 
